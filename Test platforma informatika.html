@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="kaa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informatika — Interaktiv Test Platforması</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Mammoth.js for DOCX parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #090d16;
+            color: #f3f4f6;
+        }
+        
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Modern Glassmorphism */
+        .glass-card {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .neon-glow {
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.25);
+        }
+
+        .neon-border {
+            border-color: rgba(6, 182, 212, 0.4);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(6, 182, 212, 0.4);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-cyan-500 selection:text-black">
+
+    <!-- Background Animated Shapes -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div class="absolute -top-40 -left-40 w-96 h-96 bg-cyan-600/15 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 -right-40 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 left-1/3 w-96 h-96 bg-teal-600/10 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="relative z-10 border-b border-gray-800/80 bg-gray-950/80 backdrop-blur-md sticky top-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="showTab('student-reg')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/30">
+                    <i class="fa-solid fa-microchip text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-wider text-white font-orbitron">INFORMATIKA <span class="text-cyan-400">TEST</span></h1>
+                    <p class="text-xs text-gray-400 font-medium">Mektep oqıwshıları ushın bilimdi sınaw platforması</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                <button id="nav-student-btn" onclick="showTab('student-reg')" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 flex items-center gap-2">
+                    <i class="fa-solid fa-user-graduate"></i>
+                    <span>TEST TAPSÍRÍW</span>
+                </button>
+                <button id="nav-teacher-btn" onclick="openTeacherAuthModal()" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 text-gray-400 hover:text-white hover:bg-gray-800/60 border border-transparent flex items-center gap-2">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>TEST JÚKLEW (MUǴALLIM)</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="relative z-10 max-w-5xl mx-auto px-4 py-8 flex-grow w-full">
+
+        <!-- ================= SECTION 1: STUDENT REGISTRATION & TEST SELECT ================= -->
+        <section id="sec-student-reg" class="space-y-6">
+            <div class="text-center max-w-2xl mx-auto space-y-3">
+                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                    <i class="fa-solid fa-sparkles"></i> AI Tiykarındaǵı Test Sistema
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-orbitron">OQÍWSHÍ MAǴLÍWMATLARÍ</h2>
+                <p class="text-gray-400 text-sm">Testti baslaw ushın ózińiz haqqındaǵı maǵlıwmatlardı kiritiń hám klassıńızdı saylań.</p>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 sm:p-8 space-y-6 neon-glow">
+                <form id="student-form" onsubmit="event.preventDefault(); startQuizSession();" class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">
+                            <i class="fa-solid fa-id-card text-cyan-400 mr-1"></i> Aty-familiyası:
+                        </label>
+                        <input type="text" id="stu-name" required placeholder="Mısalı: Valiev Raxat"
+                            class="w-full bg-gray-900/90 border border-gray-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition text-sm">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">
+                                <i class="fa-solid fa-school text-cyan-400 mr-1"></i> Mektebi:
+                            </label>
+                            <input type="text" id="stu-school" required placeholder="Mısalı: 1-sanlı mektep"
+                                class="w-full bg-gray-900/90 border border-gray-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition text-sm">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">
+                                <i class="fa-solid fa-layer-group text-cyan-400 mr-1"></i> Klasıńızdı saylań:
+                            </label>
+                            <select id="stu-grade" onchange="filterAvailableQuizzesByGrade()" required
+                                class="w-full bg-gray-900/90 border border-gray-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition text-sm">
+                                <option value="">-- Klasstı saylań --</option>
+                                <option value="5-klass">5-klass</option>
+                                <option value="6-klass">6-klass</option>
+                                <option value="7-klass">7-klass</option>
+                                <option value="8-klass">8-klass</option>
+                                <option value="9-klass">9-klass</option>
+                                <option value="10-klass">10-klass</option>
+                                <option value="11-klass">11-klass</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Quiz Selector for the Selected Grade -->
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">
+                            <i class="fa-solid fa-file-signature text-cyan-400 mr-1"></i> Tapsırılatuǵın Testti Saylań:
+                        </label>
+                        <select id="stu-quiz-select" required
+                            class="w-full bg-gray-900/90 border border-gray-700/80 rounded-xl px-4 py-3 text-cyan-300 font-semibold focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition text-sm">
+                            <option value="">-- Dáslep klassıńızdı saylań --</option>
+                        </select>
+                        <p id="quiz-select-msg" class="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-info text-cyan-400"></i> Klass saylanǵannan soń sol klasqa tiyisli barlıq testler shıǵadı.
+                        </p>
+                    </div>
+
+                    <button type="submit" class="w-full py-4 rounded-xl font-bold text-black bg-gradient-to-r from-cyan-400 via-teal-400 to-indigo-400 hover:opacity-95 transition duration-300 shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 text-base font-orbitron tracking-wider">
+                        <span>TESTTİ BASLAW</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 2: ACTIVE QUIZ SCREEN ================= -->
+        <section id="sec-quiz-active" class="hidden space-y-6">
+            <!-- Top Progress & Status Bar -->
+            <div class="glass-card rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold">
+                        <span id="active-grade-badge">7</span>
+                    </div>
+                    <div>
+                        <h3 id="active-quiz-title" class="text-sm font-bold text-white max-w-xs sm:max-w-md truncate">Informatika Test</h3>
+                        <p id="active-student-name" class="text-xs text-gray-400">Oqıwshı: --</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <!-- Questions Counter -->
+                    <div class="text-right">
+                        <span class="text-xs text-gray-400 block uppercase tracking-wider">Soraw:</span>
+                        <span class="text-base font-bold text-white font-orbitron"><span id="q-current" class="text-cyan-400">1</span> / <span id="q-total">20</span></span>
+                    </div>
+
+                    <!-- Timer Widget -->
+                    <div class="bg-gray-900/90 border border-cyan-500/30 rounded-xl px-4 py-2 flex items-center space-x-2 text-cyan-400">
+                        <i class="fa-regular fa-clock text-lg animate-pulse"></i>
+                        <span id="timer-display" class="font-orbitron font-bold text-lg tracking-widest">00:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-gray-900 rounded-full h-2.5 overflow-hidden border border-gray-800">
+                <div id="quiz-progress-bar" class="bg-gradient-to-r from-cyan-500 to-indigo-500 h-2.5 rounded-full transition-all duration-300" style="width: 5%;"></div>
+            </div>
+
+            <!-- Question & Answers Card -->
+            <div class="glass-card rounded-2xl p-6 sm:p-8 space-y-6 relative overflow-hidden">
+                <!-- Question Box -->
+                <div class="space-y-2">
+                    <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest font-orbitron">SORAW № <span id="q-num-label">1</span></span>
+                    <h2 id="q-text" class="text-lg sm:text-xl font-semibold text-white leading-relaxed">
+                        --
+                    </h2>
+                </div>
+
+                <!-- Options List -->
+                <div id="options-container" class="space-y-3 pt-2">
+                    <!-- Options injected via JavaScript -->
+                </div>
+
+                <!-- Next / Finish Action Footer -->
+                <div class="pt-4 border-t border-gray-800/80 flex items-center justify-between">
+                    <div id="feedback-message" class="text-sm font-medium flex items-center gap-2">
+                        <!-- Correct/Wrong alert -->
+                    </div>
+                    <button id="btn-next-q" onclick="nextQuestion()" disabled
+                        class="px-6 py-3 rounded-xl font-bold text-black bg-cyan-400 hover:bg-cyan-300 disabled:opacity-40 disabled:cursor-not-allowed transition duration-200 flex items-center gap-2 text-sm">
+                        <span>KELESI SORAW</span>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 3: QUIZ RESULT SUMMARY ================= -->
+        <section id="sec-quiz-result" class="hidden space-y-8">
+            <div class="text-center space-y-2">
+                <div class="inline-flex p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-3xl mb-2">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <h2 class="text-3xl font-extrabold text-white font-orbitron">TEST NÁTIYJELERI</h2>
+                <p id="res-student-info" class="text-gray-400 text-sm">Oqıwshı: --</p>
+            </div>
+
+            <!-- Score Cards Overview -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="glass-card rounded-2xl p-4 text-center space-y-1">
+                    <span class="text-xs text-gray-400 uppercase font-semibold">Umumıy Ball</span>
+                    <p id="res-score-percent" class="text-2xl sm:text-3xl font-extrabold text-cyan-400 font-orbitron">0%</p>
+                </div>
+                <div class="glass-card rounded-2xl p-4 text-center space-y-1">
+                    <span class="text-xs text-gray-400 uppercase font-semibold">Durıs Juwap</span>
+                    <p id="res-correct-count" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-orbitron">0 / 0</p>
+                </div>
+                <div class="glass-card rounded-2xl p-4 text-center space-y-1">
+                    <span class="text-xs text-gray-400 uppercase font-semibold">Qáte Juwap</span>
+                    <p id="res-wrong-count" class="text-2xl sm:text-3xl font-extrabold text-rose-400 font-orbitron">0</p>
+                </div>
+                <div class="glass-card rounded-2xl p-4 text-center space-y-1">
+                    <span class="text-xs text-gray-400 uppercase font-semibold">Ketken Waqıt</span>
+                    <p id="res-time-spent" class="text-2xl sm:text-3xl font-extrabold text-indigo-400 font-orbitron">00:00</p>
+                </div>
+            </div>
+
+            <!-- Detailed Question Breakdown -->
+            <div class="glass-card rounded-2xl p-6 space-y-4">
+                <h3 class="text-lg font-bold text-white border-b border-gray-800 pb-3 flex items-center justify-between">
+                    <span><i class="fa-solid fa-list-check text-cyan-400 mr-2"></i> Sorawlar Tahlili</span>
+                    <span class="text-xs font-normal text-gray-400">Aralastırılǵan variantlar boyınsha</span>
+                </h3>
+
+                <div id="answers-analysis-list" class="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                    <!-- Dynamic rendering of results -->
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center pt-2">
+                <button onclick="restartQuiz()" class="px-6 py-3.5 rounded-xl font-bold bg-cyan-500 hover:bg-cyan-400 text-black transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>TAYTADAN TAPSÍRÍW</span>
+                </button>
+                <button onclick="window.print()" class="px-6 py-3.5 rounded-xl font-bold bg-gray-800 hover:bg-gray-700 text-white border border-gray-700 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-print"></i>
+                    <span>NÁTIYJENI BÁSPADAN SHÍǴARÍW</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 4: TEACHER DASHBOARD & PARSER ================= -->
+        <section id="sec-teacher-dash" class="hidden space-y-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-800 pb-4">
+                <div>
+                    <h2 class="text-2xl font-extrabold text-white font-orbitron flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-cyan-400"></i> MUǴALLIM PANELLI
+                    </h2>
+                    <p class="text-xs text-gray-400">Klasslar ushın Word fayldan test júklew yamasa jańa test kiritiw</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="openChangePasswordModal()" class="px-3 py-2 rounded-xl text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-cyan-300 border border-gray-700 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-key"></i> Paroldı Ózgertiw
+                    </button>
+                    <button onclick="logoutTeacher()" class="px-3 py-2 rounded-xl text-xs font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-right-from-bracket"></i> Shıǵıw
+                    </button>
+                </div>
+            </div>
+
+            <!-- Word / File Importer Card -->
+            <div class="glass-card rounded-2xl p-6 sm:p-8 space-y-6">
+                <div class="border-b border-gray-800 pb-4 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-file-word text-cyan-400 mr-2"></i> Word (.docx) Yamasa Tekst Fayldan Test Júklew</h3>
+                        <p class="text-xs text-gray-400 mt-1">
+                            Durıs juwap variantınıń basında, keyininde yamasa tekstinde <span class="text-amber-400 font-bold">* (juldızsha)</span> belgisi bolsa, avtomatikalıq durıs juwap dep alınadı.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">1. Klasstı Saylań:</label>
+                        <select id="import-target-grade" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-400 text-sm">
+                            <option value="5-klass">5-klass</option>
+                            <option value="6-klass">6-klass</option>
+                            <option value="7-klass" selected>7-klass</option>
+                            <option value="8-klass">8-klass</option>
+                            <option value="9-klass">9-klass</option>
+                            <option value="10-klass">10-klass</option>
+                            <option value="11-klass">11-klass</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">2. Test Teması / Ataması:</label>
+                        <input type="text" id="import-quiz-title" placeholder="Mısalı: 1-sherek juwmaqlawshı test"
+                            class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-400 text-sm">
+                    </div>
+                </div>
+
+                <!-- Drag & Drop File Upload -->
+                <div class="border-2 border-dashed border-gray-700 hover:border-cyan-400/80 rounded-2xl p-8 text-center transition cursor-pointer bg-gray-900/40 relative">
+                    <input type="file" id="docx-file-input" accept=".docx, .txt, .json" onchange="handleFileUpload(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="space-y-3 pointer-events-none">
+                        <div class="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center mx-auto text-2xl">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-white">Word (.docx), TXT yamasa JSON fayldı usı jerge taslań</p>
+                            <p class="text-xs text-gray-500 mt-1">Yamasa fayldı tańlaw ushın basıń</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sample Word Format Helper -->
+                <div class="bg-gray-900/80 rounded-xl p-4 border border-gray-800 text-xs space-y-2">
+                    <p class="font-bold text-cyan-400 uppercase tracking-wider"><i class="fa-solid fa-lightbulb mr-1"></i> Word fayl formati mısalı:</p>
+                    <pre class="text-gray-300 bg-gray-950 p-3 rounded-lg overflow-x-auto font-mono text-[11px] leading-relaxed">1. Tekstti eki sheti boylap birdey tegislew buyrıǵı qaysı?
+A) Align Left
+B) Center
+C) Align Right
+* D) Justify   <span class="text-amber-400 font-semibold">&lt;-- Durıs juwap aldına juldızsha (*) qoyıń</span>
+
+2. Hújjetke keste qalay ornatıladı?
+* A) Insert menyusı arqalı
+B) Home menyusı arqalı
+C) View menyusı arqalı
+D) Layout menyusı arqalı</pre>
+                </div>
+            </div>
+
+            <!-- Existing Test Collections in LocalStorage -->
+            <div class="glass-card rounded-2xl p-6 sm:p-8 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-800 pb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-database text-cyan-400 mr-2"></i> Bazaǵa Saqlanǵan Testler Banki</h3>
+                        <p class="text-xs text-gray-400">Klasslar kesiminde saqlanǵan testler dizimi</p>
+                    </div>
+                    <select id="filter-bank-grade" onchange="renderTeacherQuizBank()" class="bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+                        <option value="ALL">Barlıq Klasslar</option>
+                        <option value="5-klass">5-klass</option>
+                        <option value="6-klass">6-klass</option>
+                        <option value="7-klass">7-klass</option>
+                        <option value="8-klass">8-klass</option>
+                        <option value="9-klass">9-klass</option>
+                        <option value="10-klass">10-klass</option>
+                        <option value="11-klass">11-klass</option>
+                    </select>
+                </div>
+
+                <div id="teacher-quiz-bank-list" class="space-y-3">
+                    <!-- Dynamic rendering of saved quizzes -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 border-t border-gray-800/60 bg-gray-950/60 py-6 text-center text-xs text-gray-500">
+        <p>© 2026 Informatika Test Platforması — Barlıq huquqlar qorǵalǵan.</p>
+    </footer>
+
+    <!-- ================= MODAL: TEACHER AUTH LOGIN ================= -->
+    <div id="modal-teacher-auth" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden">
+        <div class="glass-card rounded-2xl max-w-md w-full p-6 sm:p-8 space-y-6 border border-cyan-500/30 neon-glow relative">
+            <button onclick="closeTeacherAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center mx-auto text-xl border border-cyan-500/30">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white font-orbitron">MUǴALLIM KIRIWI</h3>
+                <p class="text-xs text-gray-400">Test kiritiw hám basqarıw ushın login hám paroldı kiritiń.</p>
+            </div>
+
+            <form onsubmit="event.preventDefault(); verifyTeacherLogin();" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-300 mb-1">Login:</label>
+                    <input type="text" id="auth-login-input" required placeholder="Mısalı: admin"
+                        class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-400 text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-300 mb-1">Parol:</label>
+                    <input type="password" id="auth-pass-input" required placeholder="••••••••"
+                        class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-400 text-sm">
+                </div>
+
+                <div id="auth-error-msg" class="text-xs text-rose-400 hidden font-medium text-center">
+                    <i class="fa-solid fa-circle-exclamation mr-1"></i> Login yamasa parol qáte!
+                </div>
+
+                <button type="submit" class="w-full py-3.5 rounded-xl font-bold text-black bg-cyan-400 hover:bg-cyan-300 transition text-sm font-orbitron">
+                    KIRIŴ
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: CHANGE PASSWORD ================= -->
+    <div id="modal-change-pass" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden">
+        <div class="glass-card rounded-2xl max-w-md w-full p-6 sm:p-8 space-y-6 border border-indigo-500/30 relative">
+            <button onclick="closeChangePasswordModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto text-xl border border-indigo-500/30">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white font-orbitron">PAROLDÍ ÓZGERTIW</h3>
+                <p class="text-xs text-gray-400">Jańa login hám paroldı belgilaw</p>
+            </div>
+
+            <form onsubmit="event.preventDefault(); saveNewTeacherCredentials();" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-300 mb-1">Jańa Login:</label>
+                    <input type="text" id="new-login-input" required placeholder="admin"
+                        class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-400 text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-300 mb-1">Jańa Parol:</label>
+                    <input type="password" id="new-pass-input" required placeholder="••••••••"
+                        class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-400 text-sm">
+                </div>
+
+                <button type="submit" class="w-full py-3.5 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition text-sm font-orbitron">
+                    SAQLAW
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= JAVASCRIPT APPLICATION LOGIC ================= -->
+    <script>
+        // Default Sample Quizzes Bank
+        const DEFAULT_QUIZ_BANK = [
+            {
+                id: "q_7_v1",
+                grade: "7-klass",
+                title: "7-klass 1-bap: «Tekstli hújjetlerden maqsetli faydalanıw» (1-variant)",
+                questions: [
+                    {
+                        question: "Tekstti bettiń eki sheti boylap birdey tegislew ushın qaysı buyrıq qollanıladı?",
+                        options: ["Align Left", "Center", "Align Right", "Justify"],
+                        answerIndex: 3
+                    },
+                    {
+                        question: "Hújjetke súwret jaylastırıw ushın qaysı menyudan paydalanıladı?",
+                        options: ["Home", "Insert", "Layout", "View"],
+                        answerIndex: 1
+                    },
+                    {
+                        question: "Tekstti qalın (Bold) kóriniske keltiriw ushın qaysı buyrıq isletiledi?",
+                        options: ["Bold", "Italics", "Underline", "Strikethrough"],
+                        answerIndex: 0
+                    },
+                    {
+                        question: "Súwret parametrlerin (stilin, jiyeigin) ózgertiw ushın qaysı arnawlı menyu bólimi ashıladı?",
+                        options: ["Design", "View", "Format", "Home"],
+                        answerIndex: 2
+                    },
+                    {
+                        question: "Hújjetke keste (table) ornatıw qaysı buyrıq arqalı ámelge ashırıladı?",
+                        options: ["Insert ➔ Table", "Home ➔ Paragraph", "Layout ➔ Columns", "View ➔ Zoom"],
+                        answerIndex: 0
+                    }
+                ]
+            },
+            {
+                id: "q_7_v2",
+                grade: "7-klass",
+                title: "7-klass 1-bap: «Tekstli hújjetlerden maqsetli faydalanıw» (2-variant)",
+                questions: [
+                    {
+                        question: "Súwretti teksttiń fonı (artqı qatlamı) sıpatında ornalastırıw ushın Wrap Text-tiń qaysı varianti tańlanadı?",
+                        options: ["In Front of Text", "Square", "Top and Bottom", "Behind Text"],
+                        answerIndex: 3
+                    },
+                    {
+                        question: "Grafikalıq obyektler menen islesiwde 'Aspect Ratio' túsinigi neni ańlatadı?",
+                        options: ["Súwrettiń reńler qatnasın", "Súwrettiń fayl kólemin", "Súwrettiń eni hám biyikligi ortasındaǵı proporsional qatnastı", "Súwrettiń ekrandagı tezligin"],
+                        answerIndex: 2
+                    },
+                    {
+                        question: "Wrap Text sazlamalarındaǵı 'Tight' varianti 'Square' variantınan ne menen parıqlanadı?",
+                        options: ["Tight variantında tekst súwrettiń konturı átirapında jaqın jaylasadı", "Tight variantında tekst súwrettiń arqasında qaladı", "Tight variantında tekst tek súwrettiń joqarısında jaylasadı", "Tight variantında súwret óshirilip ketedi"],
+                        answerIndex: 0
+                    }
+                ]
+            }
+        ];
+
+        // Global State
+        let quizBank = [];
+        let activeQuiz = null;
+        let currentQuestionIndex = 0;
+        let studentData = { name: '', school: '', grade: '' };
+        let timerInterval = null;
+        let secondsElapsed = 0;
+        let userAnswers = []; // Array storing user responses
+        let isTeacherAuthenticated = false;
+
+        // AUTH CREDENTIALS PERSISTENCE KEY
+        const AUTH_STORAGE_KEY = 'informatics_admin_creds';
+
+        // Helper: Get Saved Credentials or Default
+        function getTeacherAuthCredentials() {
+            const saved = localStorage.getItem(AUTH_STORAGE_KEY);
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch(e) {
+                    console.error("Auth creds parse error", e);
+                }
+            }
+            return { login: 'admin', pass: '12345' };
+        }
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            loadQuizBankFromStorage();
+            renderTeacherQuizBank();
+        });
+
+        // Load Quiz Bank from LocalStorage or Set Default
+        function loadQuizBankFromStorage() {
+            const stored = localStorage.getItem('informatics_quiz_bank');
+            if (stored) {
+                try {
+                    quizBank = JSON.parse(stored);
+                } catch (e) {
+                    quizBank = DEFAULT_QUIZ_BANK;
+                }
+            } else {
+                quizBank = DEFAULT_QUIZ_BANK;
+                saveQuizBankToStorage();
+            }
+        }
+
+        function saveQuizBankToStorage() {
+            localStorage.setItem('informatics_quiz_bank', JSON.stringify(quizBank));
+        }
+
+        // Tab Navigation Switcher
+        function showTab(tabName) {
+            document.getElementById('sec-student-reg').classList.add('hidden');
+            document.getElementById('sec-quiz-active').classList.add('hidden');
+            document.getElementById('sec-quiz-result').classList.add('hidden');
+            document.getElementById('sec-teacher-dash').classList.add('hidden');
+
+            document.getElementById('nav-student-btn').className = "px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 text-gray-400 hover:text-white border border-transparent";
+            document.getElementById('nav-teacher-btn').className = "px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 text-gray-400 hover:text-white border border-transparent";
+
+            if (tabName === 'student-reg') {
+                document.getElementById('sec-student-reg').classList.remove('hidden');
+                document.getElementById('nav-student-btn').className = "px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30";
+            } else if (tabName === 'teacher-dash') {
+                document.getElementById('sec-teacher-dash').classList.remove('hidden');
+                document.getElementById('nav-teacher-btn').className = "px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30";
+                renderTeacherQuizBank();
+            }
+        }
+
+        // ================= AUTHENTICATION LOGIC =================
+        function openTeacherAuthModal() {
+            if (isTeacherAuthenticated) {
+                showTab('teacher-dash');
+            } else {
+                document.getElementById('modal-teacher-auth').classList.remove('hidden');
+                document.getElementById('auth-error-msg').classList.add('hidden');
+            }
+        }
+
+        function closeTeacherAuthModal() {
+            document.getElementById('modal-teacher-auth').classList.add('hidden');
+        }
+
+        function verifyTeacherLogin() {
+            const inputLogin = document.getElementById('auth-login-input').value.trim();
+            const inputPass = document.getElementById('auth-pass-input').value.trim();
+            
+            const currentCreds = getTeacherAuthCredentials();
+
+            if (inputLogin === currentCreds.login && inputPass === currentCreds.pass) {
+                isTeacherAuthenticated = true;
+                closeTeacherAuthModal();
+                showTab('teacher-dash');
+            } else {
+                document.getElementById('auth-error-msg').classList.remove('hidden');
+            }
+        }
+
+        function logoutTeacher() {
+            isTeacherAuthenticated = false;
+            showTab('student-reg');
+        }
+
+        function openChangePasswordModal() {
+            const currentCreds = getTeacherAuthCredentials();
+            document.getElementById('new-login-input').value = currentCreds.login;
+            document.getElementById('new-pass-input').value = currentCreds.pass;
+            document.getElementById('modal-change-pass').classList.remove('hidden');
+        }
+
+        function closeChangePasswordModal() {
+            document.getElementById('modal-change-pass').classList.add('hidden');
+        }
+
+        function saveNewTeacherCredentials() {
+            const newLogin = document.getElementById('new-login-input').value.trim();
+            const newPass = document.getElementById('new-pass-input').value.trim();
+
+            if (!newLogin || !newPass) {
+                alert("Login hám parol bos bolmawı kerek!");
+                return;
+            }
+
+            const updatedCreds = { login: newLogin, pass: newPass };
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedCreds));
+            
+            alert("Login hám parol muvaffaqiyatlı ózgertildi hám saqlandı!");
+            closeChangePasswordModal();
+        }
+
+        // Filter Quizzes in Student View when Grade Option changes
+        function filterAvailableQuizzesByGrade() {
+            const selectedGrade = document.getElementById('stu-grade').value;
+            const selectEl = document.getElementById('stu-quiz-select');
+            selectEl.innerHTML = '';
+
+            if (!selectedGrade) {
+                selectEl.innerHTML = '<option value="">-- Dáslep klassıńızdı saylań --</option>';
+                return;
+            }
+
+            const filtered = quizBank.filter(q => q.grade === selectedGrade);
+
+            if (filtered.length === 0) {
+                selectEl.innerHTML = `<option value="">-- Usı klass (${selectedGrade}) ushın test tabılmadı --</option>`;
+            } else {
+                filtered.forEach(quiz => {
+                    const opt = document.createElement('option');
+                    opt.value = quiz.id;
+                    opt.textContent = `${quiz.title} (${quiz.questions.length} soraw)`;
+                    selectEl.appendChild(opt);
+                });
+            }
+        }
+
+        // Fisher-Yates Array Shuffle Logic
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // ================= QUIZ ENGINE =================
+        function startQuizSession() {
+            const name = document.getElementById('stu-name').value.trim();
+            const school = document.getElementById('stu-school').value.trim();
+            const grade = document.getElementById('stu-grade').value;
+            const quizId = document.getElementById('stu-quiz-select').value;
+
+            if (!quizId) {
+                alert("Íltimas, testti saylań!");
+                return;
+            }
+
+            const baseQuiz = quizBank.find(q => q.id === quizId);
+            if (!baseQuiz || !baseQuiz.questions || baseQuiz.questions.length === 0) {
+                alert("Testte sorawlar tabılmadı!");
+                return;
+            }
+
+            studentData = { name, school, grade };
+
+            // Clone & Prepare Shuffled Questions & Options
+            activeQuiz = {
+                id: baseQuiz.id,
+                title: baseQuiz.title,
+                grade: baseQuiz.grade,
+                questions: baseQuiz.questions.map(q => {
+                    const originalCorrectText = q.options[q.answerIndex];
+                    const shuffledOptions = shuffleArray(q.options);
+                    const newCorrectIndex = shuffledOptions.indexOf(originalCorrectText);
+
+                    return {
+                        question: q.question,
+                        options: shuffledOptions,
+                        answerIndex: newCorrectIndex
+                    };
+                })
+            };
+
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            secondsElapsed = 0;
+
+            // Update UI Badges
+            document.getElementById('active-grade-badge').textContent = grade.replace('-klass', '');
+            document.getElementById('active-quiz-title').textContent = activeQuiz.title;
+            document.getElementById('active-student-name').textContent = `Oqıwshı: ${studentData.name} (${studentData.school})`;
+            document.getElementById('q-total').textContent = activeQuiz.questions.length;
+
+            // Start Timer
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+                const secs = (secondsElapsed % 60).toString().padStart(2, '0');
+                document.getElementById('timer-display').textContent = `${mins}:${secs}`;
+            }, 1000);
+
+            // Show Active Screen
+            document.getElementById('sec-student-reg').classList.add('hidden');
+            document.getElementById('sec-quiz-active').classList.remove('hidden');
+
+            renderCurrentQuestion();
+        }
+
+        function renderCurrentQuestion() {
+            const qData = activeQuiz.questions[currentQuestionIndex];
+            const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+            document.getElementById('q-current').textContent = currentQuestionIndex + 1;
+            document.getElementById('q-num-label').textContent = currentQuestionIndex + 1;
+            document.getElementById('q-text').textContent = qData.question;
+
+            // Progress Bar
+            const progressPercent = ((currentQuestionIndex + 1) / activeQuiz.questions.length) * 100;
+            document.getElementById('quiz-progress-bar').style.width = `${progressPercent}%`;
+
+            // Reset Footer controls
+            document.getElementById('btn-next-q').disabled = true;
+            document.getElementById('feedback-message').innerHTML = '';
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            qData.options.forEach((optText, idx) => {
+                const optBtn = document.createElement('button');
+                optBtn.type = 'button';
+                optBtn.className = `option-btn w-full p-4 rounded-xl border border-gray-800 bg-gray-900/60 hover:border-cyan-500/50 hover:bg-gray-800/80 text-left transition duration-200 flex items-center justify-between group`;
+                optBtn.onclick = () => selectOption(idx);
+
+                optBtn.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-cyan-500/20 text-cyan-400 font-bold flex items-center justify-center text-xs font-orbitron transition border border-gray-700">
+                            ${letters[idx] || (idx + 1)}
+                        </span>
+                        <span class="text-sm text-gray-200 font-medium">${optBtn.textContent = optText}</span>
+                    </div>
+                    <div class="status-icon text-lg hidden"></div>
+                `;
+                optionsContainer.appendChild(optBtn);
+            });
+        }
+
+        function selectOption(selectedIndex) {
+            const qData = activeQuiz.questions[currentQuestionIndex];
+            const buttons = document.querySelectorAll('.option-btn');
+            const feedbackEl = document.getElementById('feedback-message');
+
+            buttons.forEach(btn => btn.disabled = true);
+
+            const isCorrect = (selectedIndex === qData.answerIndex);
+            userAnswers[currentQuestionIndex] = {
+                selectedIndex,
+                isCorrect,
+                correctIndex: qData.answerIndex
+            };
+
+            // Highlight Chosen & Correct Buttons
+            buttons.forEach((btn, idx) => {
+                const iconEl = btn.querySelector('.status-icon');
+                iconEl.classList.remove('hidden');
+
+                if (idx === qData.answerIndex) {
+                    btn.className = "w-full p-4 rounded-xl border-2 border-emerald-500 bg-emerald-950/40 text-left transition flex items-center justify-between";
+                    iconEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i>`;
+                } else if (idx === selectedIndex && !isCorrect) {
+                    btn.className = "w-full p-4 rounded-xl border-2 border-rose-500 bg-rose-950/40 text-left transition flex items-center justify-between";
+                    iconEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-400"></i>`;
+                } else {
+                    btn.className = "w-full p-4 rounded-xl border border-gray-800/40 bg-gray-900/20 text-left opacity-40 transition flex items-center justify-between";
+                }
+            });
+
+            // Instant Visual Feedback Message
+            if (isCorrect) {
+                feedbackEl.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Ála! Durıs juwap!</span>`;
+            } else {
+                feedbackEl.innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Qáte juwap!</span>`;
+            }
+
+            document.getElementById('btn-next-q').disabled = false;
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < activeQuiz.questions.length - 1) {
+                currentQuestionIndex++;
+                renderCurrentQuestion();
+            } else {
+                finishQuizSession();
+            }
+        }
+
+        function finishQuizSession() {
+            if (timerInterval) clearInterval(timerInterval);
+
+            // Compute Statistics
+            const totalQuestions = activeQuiz.questions.length;
+            const correctAnswersCount = userAnswers.filter(a => a && a.isCorrect).length;
+            const wrongAnswersCount = totalQuestions - correctAnswersCount;
+            const scorePercent = Math.round((correctAnswersCount / totalQuestions) * 100);
+
+            // Time Formatting
+            const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+            const secs = (secondsElapsed % 60).toString().padStart(2, '0');
+
+            // Render Results Screen
+            document.getElementById('sec-quiz-active').classList.add('hidden');
+            document.getElementById('sec-quiz-result').classList.remove('hidden');
+
+            document.getElementById('res-student-info').textContent = `Oqıwshı: ${studentData.name} | Mektep: ${studentData.school} | Klass: ${studentData.grade}`;
+            document.getElementById('res-score-percent').textContent = `${scorePercent}%`;
+            document.getElementById('res-correct-count').textContent = `${correctAnswersCount} / ${totalQuestions}`;
+            document.getElementById('res-wrong-count').textContent = `${wrongAnswersCount}`;
+            document.getElementById('res-time-spent').textContent = `${mins}:${secs}`;
+
+            // Trigger Confetti for High Performance
+            if (scorePercent >= 80 && typeof confetti === 'function') {
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            }
+
+            // Render Answers Analysis List
+            const analysisList = document.getElementById('answers-analysis-list');
+            analysisList.innerHTML = '';
+
+            activeQuiz.questions.forEach((q, idx) => {
+                const uAns = userAnswers[idx];
+                const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+                const isCorr = uAns ? uAns.isCorrect : false;
+                const userChoiceText = uAns ? q.options[uAns.selectedIndex] : 'Juwap berilmedi';
+                const correctText = q.options[q.answerIndex];
+
+                const item = document.createElement('div');
+                item.className = `p-4 rounded-xl border ${isCorr ? 'border-emerald-500/30 bg-emerald-950/10' : 'border-rose-500/30 bg-rose-950/10'} space-y-2 text-xs`;
+
+                item.innerHTML = `
+                    <div class="flex items-start justify-between gap-2">
+                        <p class="font-semibold text-white text-sm"><span class="text-cyan-400 font-orbitron">${idx + 1}.</span> ${q.question}</p>
+                        <span class="px-2 py-0.5 rounded font-bold uppercase ${isCorr ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">
+                            ${isCorr ? 'Durıs' : 'Qáte'}
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-gray-300">
+                        <div><span class="text-gray-500">Sizńıń juvabıńız:</span> <span class="${isCorr ? 'text-emerald-400' : 'text-rose-400'} font-medium">${userChoiceText}</span></div>
+                        <div><span class="text-gray-500">Durıs juwap:</span> <span class="text-emerald-400 font-medium">${correctText}</span></div>
+                    </div>
+                `;
+                analysisList.appendChild(item);
+            });
+        }
+
+        function restartQuiz() {
+            document.getElementById('sec-quiz-result').classList.add('hidden');
+            document.getElementById('sec-student-reg').classList.remove('hidden');
+        }
+
+        // ================= WORD & FILE PARSER LOGIC =================
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const targetGrade = document.getElementById('import-target-grade').value;
+            let customTitle = document.getElementById('import-quiz-title').value.trim();
+            if (!customTitle) {
+                customTitle = file.name.replace(/\.[^/.]+$/, "");
+            }
+
+            const fileName = file.name.toLowerCase();
+
+            if (fileName.endsWith('.docx')) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const arrayBuffer = event.target.result;
+                    mammoth.extractRawText({ arrayBuffer: arrayBuffer })
+                        .then(function(result) {
+                            parseRawTextToQuiz(result.value, customTitle, targetGrade);
+                        })
+                        .catch(function(err) {
+                            alert("Docx fayldı oqıwda qátelik júz berdi: " + err.message);
+                        });
+                };
+                reader.readAsArrayBuffer(file);
+            } else if (fileName.endsWith('.txt')) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    parseRawTextToQuiz(event.target.result, customTitle, targetGrade);
+                };
+                reader.readAsText(file);
+            } else if (fileName.endsWith('.json')) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const parsed = JSON.parse(event.target.result);
+                        if (Array.isArray(parsed)) {
+                            quizBank.push(...parsed);
+                        } else if (parsed.questions) {
+                            quizBank.push(parsed);
+                        }
+                        saveQuizBankToStorage();
+                        renderTeacherQuizBank();
+                        alert("JSON faylı muvaffaqiyatlı júklendi!");
+                    } catch(err) {
+                        alert("JSON faylı qáte: " + err.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function parseRawTextToQuiz(rawText, title, grade) {
+            const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+            
+            const parsedQuestions = [];
+            let currentQuestionText = "";
+            let currentOptions = [];
+            let currentCorrectIndex = -1;
+
+            // Regex patterns for option lines
+            const optionRegex = /^(\*?\s*|\s*\*?)([A-D|a-d])[\)\.]\s*(.*)$/;
+
+            lines.forEach(line => {
+                const match = line.match(optionRegex);
+
+                if (match) {
+                    // It's an option line!
+                    const hasAsteriskPrefix = line.includes('*');
+                    const cleanText = match[3].replace(/\*/g, '').trim();
+
+                    currentOptions.push(cleanText);
+
+                    if (hasAsteriskPrefix) {
+                        currentCorrectIndex = currentOptions.length - 1;
+                    }
+                } else {
+                    // Check if line looks like question line (e.g., "1. Tekstti...")
+                    if (/^\d+[\)\.]/.test(line) || currentOptions.length === 4) {
+                        // Save previous question if valid
+                        if (currentQuestionText && currentOptions.length >= 2) {
+                            parsedQuestions.push({
+                                question: currentQuestionText.replace(/^\d+[\)\.]\s*/, ''),
+                                options: currentOptions,
+                                answerIndex: currentCorrectIndex >= 0 ? currentCorrectIndex : 0
+                            });
+                        }
+                        // Reset for new question
+                        currentQuestionText = line;
+                        currentOptions = [];
+                        currentCorrectIndex = -1;
+                    } else {
+                        // Continuation of current question text
+                        if (currentQuestionText) {
+                            currentQuestionText += " " + line;
+                        } else {
+                            currentQuestionText = line;
+                        }
+                    }
+                }
+            });
+
+            // Push final question
+            if (currentQuestionText && currentOptions.length >= 2) {
+                parsedQuestions.push({
+                    question: currentQuestionText.replace(/^\d+[\)\.]\s*/, ''),
+                    options: currentOptions,
+                    answerIndex: currentCorrectIndex >= 0 ? currentCorrectIndex : 0
+                });
+            }
+
+            if (parsedQuestions.length === 0) {
+                alert("Fayldan sorawlar tabilmadi. Íltimas fayl formatın tekseriń.");
+                return;
+            }
+
+            const newQuiz = {
+                id: "custom_" + Date.now(),
+                grade: grade,
+                title: title,
+                questions: parsedQuestions
+            };
+
+            quizBank.unshift(newQuiz);
+            saveQuizBankToStorage();
+            renderTeacherQuizBank();
+            alert(`Sáttili júklendi! (${grade} ushın ${parsedQuestions.length} soraw kiritildi).`);
+        }
+
+        // Render Teacher Quiz Bank
+        function renderTeacherQuizBank() {
+            const filterGrade = document.getElementById('filter-bank-grade').value;
+            const bankListEl = document.getElementById('teacher-quiz-bank-list');
+            bankListEl.innerHTML = '';
+
+            let list = quizBank;
+            if (filterGrade !== 'ALL') {
+                list = quizBank.filter(q => q.grade === filterGrade);
+            }
+
+            if (list.length === 0) {
+                bankListEl.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">Bazada testler tabılmadı.</p>`;
+                return;
+            }
+
+            list.forEach(quiz => {
+                const item = document.createElement('div');
+                item.className = "flex items-center justify-between p-4 rounded-xl border border-gray-800 bg-gray-900/80 hover:border-gray-700 transition";
+
+                item.innerHTML = `
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">${quiz.grade}</span>
+                            <h4 class="text-sm font-bold text-white">${quiz.title}</h4>
+                        </div>
+                        <p class="text-xs text-gray-400"><i class="fa-solid fa-list-ol mr-1"></i> ${quiz.questions.length} soraw</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="exportQuizJson('${quiz.id}')" class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-cyan-400 text-xs" title="JSON júklep alıw">
+                            <i class="fa-solid fa-download"></i>
+                        </button>
+                        <button onclick="deleteQuizFromBank('${quiz.id}')" class="p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs" title="Óshiriw">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                bankListEl.appendChild(item);
+            });
+        }
+
+        function deleteQuizFromBank(quizId) {
+            if (confirm("Haqıqatandada usı testti óshirmekshisizbe?")) {
+                quizBank = quizBank.filter(q => q.id !== quizId);
+                saveQuizBankToStorage();
+                renderTeacherQuizBank();
+            }
+        }
+
+        function exportQuizJson(quizId) {
+            const quiz = quizBank.find(q => q.id === quizId);
+            if (!quiz) return;
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(quiz, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `${quiz.title}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+    </script>
+</body>
+</html>
